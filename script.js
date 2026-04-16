@@ -4,6 +4,7 @@ let books = JSON.parse(localStorage.getItem("books")) || [];
 let records = JSON.parse(localStorage.getItem("records")) || [];
 let currentUser = JSON.parse(localStorage.getItem("currentUser")) || null;
 //AUTO LOGIN
+window.onload = function () {
   if (currentUser) {
     document.getElementById("authSection").classList.add("hidden");
     document.getElementById("appSection").classList.remove("hidden");
