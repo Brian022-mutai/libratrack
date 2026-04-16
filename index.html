@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>LibraTrack</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+</head>
+
+<body class="bg-blue-100 font-sans">
+
+<!--  AUTH  -->
+<div id="authSection" class="flex justify-center items-center h-screen">
+
+  <div class="bg-white p-6 rounded-xl shadow-lg w-80">
+
+    <h2 class="text-xl font-bold text-blue-600 mb-4 text-center">
+      📚 LibraTrack
+    </h2>
+
+    <input id="email"
+      placeholder="Email"
+      class="w-full mb-2 p-2 border rounded focus:outline-blue-400">
+
+    <input id="password"
+      type="password"
+      placeholder="6-char password"
+      class="w-full mb-2 p-2 border rounded focus:outline-blue-400">
+
+    <select id="role"
+      class="w-full mb-3 p-2 border rounded">
+
+      <option value="member">Member</option>
+      <option value="librarian">Librarian</option>
+
+    </select>
+
+    <button onclick="register()"
+      class="bg-blue-500 hover:bg-blue-600 text-white w-full p-2 mb-2 rounded">
+      Register
+    </button>
+
+    <button onclick="login()"
+      class="bg-blue-700 hover:bg-blue-800 text-white w-full p-2 rounded">
+      Login
+    </button>
+
+  </div>
+</div>
+
+<!--  APP -->
+<div id="appSection" class="hidden p-6">
+
+  <!-- TOP BAR -->
+  <div class="flex justify-between items-center mb-4">
+
+    <h1 class="text-2xl font-bold text-blue-700">
+      📚 LibraTrack
+    </h1>
+
+    <!-- LOGOUT BUTTON -->
+    <button onclick="logout()"
+      class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">
+      Logout
+    </button>
+
+  </div>
+
+  <!-- SEARCH -->
+  <div class="mb-4 flex gap-2">
+
+    <input id="searchInput"
+      placeholder="Search books..."
+      class="p-2 border rounded w-60 focus:outline-blue-400">
+
+    <button onclick="searchBook()"
+      class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
+      Search
+    </button>
+
+  </div>
+
+  <!-- NAV BOXES -->
+  <div class="grid grid-cols-2 gap-4 mb-6">
+
+    <div onclick="openSection('borrow')"
+      class="box">
+      Borrow / Add Book
+    </div>
+
+    <div onclick="openSection('catalogue')"
+      class="box">
+      Catalogue
+    </div>
+
+    <div onclick="openSection('tracking')"
+      class="box">
+      Tracking
+    </div>
+
+    <div onclick="openSection('dashboard')"
+      class="box">
+      Dashboard
+    </div>
+
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results"
+    class="bg-white p-4 rounded-xl shadow min-h-[200px] transition-all">
+  </div>
+
+</div>
+
+<!-- STYLE -->
+<style>
+.box {
+  background: #60a5fa;
+  padding: 16px;
+  border-radius: 12px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.box:hover {
+  background: #3b82f6;
+  transform: scale(1.03);
+}
+</style>
+
+<script src="script.js"></script>
+
+</body>
+</html>
