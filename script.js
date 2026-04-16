@@ -1,11 +1,9 @@
-// ================= SAFE INIT =================
+// SAFE INIT
 let users = JSON.parse(localStorage.getItem("users")) || [];
 let books = JSON.parse(localStorage.getItem("books")) || [];
 let records = JSON.parse(localStorage.getItem("records")) || [];
 let currentUser = JSON.parse(localStorage.getItem("currentUser")) || null;
-
-// ================= AUTO LOGIN =================
-window.onload = () => {
+//AUTO LOGIN
   if (currentUser) {
     document.getElementById("authSection").classList.add("hidden");
     document.getElementById("appSection").classList.remove("hidden");
@@ -13,7 +11,7 @@ window.onload = () => {
   }
 };
 
-// ================= SAVE =================
+// SAVE
 function saveAll() {
   localStorage.setItem("users", JSON.stringify(users));
   localStorage.setItem("books", JSON.stringify(books));
@@ -21,7 +19,7 @@ function saveAll() {
   localStorage.setItem("currentUser", JSON.stringify(currentUser));
 }
 
-// ================= HELPERS =================
+// Helpers
 function setLoading(msg) {
   document.getElementById("results").innerHTML =
     `<p class="text-gray-500">${msg}</p>`;
@@ -36,7 +34,7 @@ function escapeQuotes(str) {
   return str.replace(/'/g, "\\'");
 }
 
-// ================= AUTH =================
+// auth
 function register() {
   let email = document.getElementById("email").value.trim();
   let password = document.getElementById("password").value.trim();
@@ -72,7 +70,7 @@ function login() {
   showDashboard();
 }
 
-// ================= LOGOUT =================
+//logging out
 function logout() {
   currentUser = null;
   localStorage.removeItem("currentUser");
@@ -83,7 +81,7 @@ function logout() {
   document.getElementById("results").innerHTML = "";
 }
 
-// ================= NAVIGATION =================
+// navigation
 function openSection(section) {
   if (!currentUser) return alert("Login first");
 
@@ -101,7 +99,7 @@ function openSection(section) {
   }
 }
 
-// ================= SEARCH =================
+// search bar
 async function searchBook() {
   let query = document.getElementById("searchInput").value.trim();
   if (!query) return alert("Enter search term");
@@ -139,7 +137,7 @@ async function searchBook() {
   }
 }
 
-// ================= CATALOGUE =================
+// cataloque
 async function showCatalogue(category = "popular") {
   try {
     setLoading("Loading catalogue...");
@@ -201,7 +199,7 @@ async function showCatalogue(category = "popular") {
   }
 }
 
-// ================= BORROW =================
+// borrow
 function showBorrow() {
   document.getElementById("results").innerHTML = `
     <h2 class="font-bold mb-2">Borrow Book</h2>
@@ -246,7 +244,7 @@ function borrow() {
   alert("Book borrowed!");
 }
 
-// ================= QUICK BORROW =================
+// quick borrow
 function quickBorrow(title) {
   document.getElementById("results").innerHTML = `
     <h3 class="font-bold mb-2">${title}</h3>
@@ -287,7 +285,7 @@ function confirmBorrow(title) {
   alert("Borrowed!");
 }
 
-// ================= TRACKING (FULL ENGLISH FIXED) =================
+// tracking
 function showTracking() {
   let myBooks = records.filter(r => r.email === currentUser.email);
 
@@ -326,7 +324,7 @@ function showTracking() {
   document.getElementById("results").innerHTML = html;
 }
 
-// ================= OVERDUE =================
+// overdue
 function showOverdue() {
   let today = new Date();
 
@@ -347,7 +345,7 @@ function showOverdue() {
   document.getElementById("results").innerHTML = html;
 }
 
-// ================= DASHBOARD =================
+// dashboard
 function showDashboard() {
   let myRecords = records.filter(r => r.email === currentUser.email);
 
