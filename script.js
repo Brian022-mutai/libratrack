@@ -1,26 +1,15 @@
-// SAFE INIT
-let users = JSON.parse(localStorage.getItem("users")) || [];
-let books = JSON.parse(localStorage.getItem("books")) || [];
-let records = JSON.parse(localStorage.getItem("records")) || [];
-let currentUser = JSON.parse(localStorage.getItem("currentUser")) || null;
-//AUTO LOGIN
+const API = "http://localhost:3000";
+
+// CURRENT USER
+let currentUser = null;
+// AUTO LOGIN 
+
 window.onload = function () {
-  if (currentUser) {
-    document.getElementById("authSection").classList.add("hidden");
-    document.getElementById("appSection").classList.remove("hidden");
-    showDashboard();
-  }
+  document.getElementById("authSection").classList.remove("hidden");
+  document.getElementById("appSection").classList.add("hidden");
 };
 
-// SAVE
-function saveAll() {
-  localStorage.setItem("users", JSON.stringify(users));
-  localStorage.setItem("books", JSON.stringify(books));
-  localStorage.setItem("records", JSON.stringify(records));
-  localStorage.setItem("currentUser", JSON.stringify(currentUser));
-}
-
-// Helpers
+// HELPERS
 function setLoading(msg) {
   document.getElementById("results").innerHTML =
     `<p class="text-gray-500">${msg}</p>`;
@@ -35,35 +24,47 @@ function escapeQuotes(str) {
   return str.replace(/'/g, "\\'");
 }
 
-// auth
-function register() {
+// REGISTER
+
+async function register() {
   let email = document.getElementById("email").value.trim();
   let password = document.getElementById("password").value.trim();
   let role = document.getElementById("role").value;
 
   if (!email || !password) return alert("Fill all fields");
-  if (password.length !== 6) return alert("Password must be 6 characters");
+  if (password.length < 6) return alert("Password must be at least 6 characters");
+
+  let res = await fetch(`${API}/users`);
+  let users = await res.json();
 
   if (users.find(u => u.email === email)) {
     return alert("User already exists");
   }
 
-  users.push({ email, password, role });
-  saveAll();
+  await fetch(`${API}/users`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password, role })
+  });
 
   alert("Registered successfully!");
 }
 
-function login() {
+
+// LOGIN
+
+async function login() {
   let email = document.getElementById("email").value.trim();
   let password = document.getElementById("password").value.trim();
+
+  let res = await fetch(`${API}/users`);
+  let users = await res.json();
 
   let user = users.find(u => u.email === email && u.password === password);
 
   if (!user) return alert("Invalid login");
 
   currentUser = user;
-  saveAll();
 
   document.getElementById("authSection").classList.add("hidden");
   document.getElementById("appSection").classList.remove("hidden");
@@ -71,10 +72,11 @@ function login() {
   showDashboard();
 }
 
-//logging out
+
+// LOGOUT
+
 function logout() {
   currentUser = null;
-  localStorage.removeItem("currentUser");
 
   document.getElementById("authSection").classList.remove("hidden");
   document.getElementById("appSection").classList.add("hidden");
@@ -82,125 +84,85 @@ function logout() {
   document.getElementById("results").innerHTML = "";
 }
 
-// navigation
+
+// NAVIGATION
 function openSection(section) {
   if (!currentUser) return alert("Login first");
 
   if (section === "dashboard") showDashboard();
   if (section === "catalogue") showCatalogue();
 
-  if (section === "borrow") {
-    if (currentUser.role === "librarian") addBookByISBN();
-    else showBorrow();
-  }
-
-  if (section === "tracking") {
-    if (currentUser.role === "librarian") showOverdue();
-    else showTracking();
-  }
+  if (section === "borrow") showBorrow();
+  if (section === "tracking") showTracking();
 }
 
-// search bar
+
+// SEARCH (Open Library API)
+
 async function searchBook() {
   let query = document.getElementById("searchInput").value.trim();
   if (!query) return alert("Enter search term");
 
-  try {
-    setLoading("Searching books...");
+  setLoading("Searching...");
 
-    let res = await fetch(`https://openlibrary.org/search.json?q=${query}`);
-    let data = await res.json();
+  let res = await fetch(`https://openlibrary.org/search.json?q=${query}`);
+  let data = await res.json();
 
-    if (!data.docs?.length) {
-      return showMessage("No books found", "red");
-    }
+  let html = `<h2 class="font-bold mb-2">Search Results</h2>`;
 
-    let html = `<h2 class="font-bold mb-2">Search Results</h2>`;
+  data.docs.slice(0, 10).forEach(book => {
+    html += `
+      <div class="border-b py-2">
+        <strong>${book.title}</strong><br>
+        <span class="text-gray-600">${book.author_name?.[0] || "Unknown"}</span><br>
 
-    data.docs.slice(0, 10).forEach(book => {
-      html += `
-        <div class="border-b py-2">
-          <strong>${book.title}</strong><br>
-          <span class="text-gray-600">${book.author_name?.[0] || "Unknown"}</span><br>
-
-          <button onclick="quickBorrow('${escapeQuotes(book.title)}')"
-            class="mt-1 bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm">
-            Borrow
-          </button>
-        </div>
-      `;
-    });
-
-    document.getElementById("results").innerHTML = html;
-
-  } catch {
-    showMessage("Failed to load books", "red");
-  }
-}
-
-// cataloque
-async function showCatalogue(category = "popular") {
-  try {
-    setLoading("Loading catalogue...");
-
-    let res = await fetch(`https://openlibrary.org/search.json?q=${category}`);
-    let data = await res.json();
-
-    if (!data.docs?.length) {
-      return showMessage("No books found", "red");
-    }
-
-    let html = `
-      <h2 class="font-bold mb-3">📚 Catalogue</h2>
-
-      <div class="mb-4">
-        <select onchange="showCatalogue(this.value)"
-          class="p-2 border rounded">
-          <option value="popular">Popular</option>
-          <option value="fiction">Fiction</option>
-          <option value="science">Science</option>
-          <option value="history">History</option>
-          <option value="technology">Technology</option>
-        </select>
+        <button onclick="quickBorrow('${escapeQuotes(book.title)}')"
+          class="mt-1 bg-green-500 text-white px-3 py-1 rounded text-sm">
+          Borrow
+        </button>
       </div>
-
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
     `;
+  });
 
-    data.docs.slice(0, 12).forEach(book => {
-      let cover = book.cover_i
-        ? `https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg`
-        : "https://via.placeholder.com/100x150?text=No+Cover";
-
-      html += `
-        <div class="bg-white p-3 rounded shadow">
-
-          <img src="${cover}" class="w-full h-40 object-cover rounded mb-2">
-
-          <h3 class="font-semibold text-sm">${book.title}</h3>
-
-          <p class="text-xs text-gray-600 mb-2">
-            ${book.author_name?.[0] || "Unknown"}
-          </p>
-
-          <button onclick="quickBorrow('${escapeQuotes(book.title)}')"
-            class="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs w-full">
-            Borrow
-          </button>
-
-        </div>
-      `;
-    });
-
-    html += `</div>`;
-    document.getElementById("results").innerHTML = html;
-
-  } catch {
-    showMessage("Failed to load catalogue", "red");
-  }
+  document.getElementById("results").innerHTML = html;
 }
 
-// borrow
+
+// CATALOGUE
+
+async function showCatalogue(category = "popular") {
+  setLoading("Loading catalogue...");
+
+  let res = await fetch(`https://openlibrary.org/search.json?q=${category}`);
+  let data = await res.json();
+
+  let html = `<h2 class="font-bold mb-3">📚 Catalogue</h2>`;
+
+  data.docs.slice(0, 12).forEach(book => {
+    let cover = book.cover_i
+      ? `https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg`
+      : "https://via.placeholder.com/100x150?text=No+Cover";
+
+    html += `
+      <div class="bg-white p-3 rounded shadow mb-2">
+        <img src="${cover}" class="w-full h-40 object-cover rounded mb-2">
+        <h3 class="font-semibold text-sm">${book.title}</h3>
+        <p class="text-xs text-gray-600">${book.author_name?.[0] || "Unknown"}</p>
+
+        <button onclick="quickBorrow('${escapeQuotes(book.title)}')"
+          class="bg-green-500 text-white px-2 py-1 rounded text-xs w-full">
+          Borrow
+        </button>
+      </div>
+    `;
+  });
+
+  document.getElementById("results").innerHTML = html;
+}
+
+
+// BORROW FLOW
+
 function showBorrow() {
   document.getElementById("results").innerHTML = `
     <h2 class="font-bold mb-2">Borrow Book</h2>
@@ -212,17 +174,20 @@ function showBorrow() {
       class="border p-2 mb-2 w-full rounded">
 
     <button onclick="borrow()"
-      class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+      class="bg-blue-600 text-white px-4 py-2 rounded">
       Borrow
     </button>
   `;
 }
 
-function borrow() {
-  let title = document.getElementById("title").value.trim();
+async function borrow(titleFromQuick) {
+  let title = titleFromQuick || document.getElementById("title").value.trim();
   let date = document.getElementById("date").value;
 
   if (!title || !date) return alert("Fill all fields");
+
+  let res = await fetch(`${API}/records`);
+  let records = await res.json();
 
   let exists = records.find(
     r => r.email === currentUser.email && r.title === title && !r.returned
@@ -230,22 +195,23 @@ function borrow() {
 
   if (exists) return alert("Already borrowed");
 
-  records.push({
-    email: currentUser.email,
-    title,
-    dueDate: date,
-    returned: false
+  await fetch(`${API}/records`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: currentUser.email,
+      title,
+      dueDate: date,
+      returned: false
+    })
   });
 
-  if (!books.find(b => b.title === title)) {
-    books.push({ title, author: "Unknown", available: true });
-  }
-
-  saveAll();
   alert("Book borrowed!");
 }
 
-// quick borrow
+
+// QUICK BORROW
+
 function quickBorrow(title) {
   document.getElementById("results").innerHTML = `
     <h3 class="font-bold mb-2">${title}</h3>
@@ -253,48 +219,26 @@ function quickBorrow(title) {
     <input id="date" type="date"
       class="border p-2 mb-2 w-full rounded">
 
-    <button onclick="confirmBorrow('${escapeQuotes(title)}')"
-      class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+    <button onclick="borrow('${escapeQuotes(title)}')"
+      class="bg-blue-600 text-white px-4 py-2 rounded">
       Confirm Borrow
     </button>
   `;
 }
 
-function confirmBorrow(title) {
-  let date = document.getElementById("date").value;
+// TRACKING
 
-  if (!date) return alert("Select date");
+async function showTracking() {
+  let res = await fetch(`${API}/records`);
+  let records = await res.json();
 
-  let exists = records.find(
-    r => r.email === currentUser.email && r.title === title && !r.returned
-  );
-
-  if (exists) return alert("Already borrowed");
-
-  records.push({
-    email: currentUser.email,
-    title,
-    dueDate: date,
-    returned: false
-  });
-
-  if (!books.find(b => b.title === title)) {
-    books.push({ title, author: "Unknown", available: true });
-  }
-
-  saveAll();
-  alert("Borrowed!");
-}
-
-// tracking
-function showTracking() {
   let myBooks = records.filter(r => r.email === currentUser.email);
 
   if (!myBooks.length) {
     return showMessage("No borrowed books yet", "gray");
   }
 
-  let html = `<h2 class="font-bold mb-2">My Borrowed Books</h2>`;
+  let html = `<h2 class="font-bold mb-2">My Books</h2>`;
 
   myBooks.forEach(r => {
     let due = new Date(r.dueDate);
@@ -304,20 +248,13 @@ function showTracking() {
       ? "Returned"
       : due < today
         ? "Overdue"
-        : "Currently Borrowed";
-
-    let color =
-      status === "Overdue"
-        ? "text-red-600"
-        : status === "Returned"
-          ? "text-blue-600"
-          : "text-green-600";
+        : "Borrowed";
 
     html += `
       <div class="border-b py-2">
-        <strong>Book Title:</strong> ${r.title}<br>
-        <strong>Due Date:</strong> ${r.dueDate || "Not set"}<br>
-        <span class="${color}">Status: ${status}</span>
+        <strong>${r.title}</strong><br>
+        Due: ${r.dueDate}<br>
+        Status: ${status}
       </div>
     `;
   });
@@ -325,35 +262,19 @@ function showTracking() {
   document.getElementById("results").innerHTML = html;
 }
 
-// overdue
-function showOverdue() {
-  let today = new Date();
 
-  let overdue = records.filter(r =>
-    new Date(r.dueDate) < today && !r.returned
-  );
+// DASHBOARD
 
-  if (!overdue.length) {
-    return showMessage("No overdue books", "green");
-  }
+async function showDashboard() {
+  let res = await fetch(`${API}/records`);
+  let records = await res.json();
 
-  let html = `<h2 class="font-bold mb-2">Overdue Books</h2>`;
-
-  overdue.forEach(r => {
-    html += `<div class="border-b py-2">${r.title} - ${r.email}</div>`;
-  });
-
-  document.getElementById("results").innerHTML = html;
-}
-
-// dashboard
-function showDashboard() {
-  let myRecords = records.filter(r => r.email === currentUser.email);
+  let my = records.filter(r => r.email === currentUser.email);
 
   document.getElementById("results").innerHTML = `
     <h2 class="font-bold mb-2">Dashboard</h2>
     <p>Email: ${currentUser.email}</p>
     <p>Role: ${currentUser.role}</p>
-    <p>Books Borrowed: ${myRecords.length}</p>
+    <p>Books Borrowed: ${my.length}</p>
   `;
 }

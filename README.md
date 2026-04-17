@@ -1,73 +1,116 @@
-# 📚 LibraTrack
+ LibraTrack
+LibraTrack is a simple library management system built with HTML, Tailwind CSS, and JavaScript.
+It allows users to register, log in, search books via the Open Library API, borrow books, track borrowed records, and view a personalized dashboard.
 
-LibraTrack is a simple library management web application built with **HTML**, **CSS (Tailwind)**, and **JavaScript**.  
-It allows users to register, log in, borrow books, track borrowed items, and manage overdue records — all stored in the browser using `localStorage`.
+Features
+Authentication
 
----
+Register as a Member or Librarian
 
-## 🚀 Features
+Login/logout functionality
 
-- 🔑 **Authentication**
-  - Register and login with email, password, and role (Member/Librarian).
-  - Auto-login using `localStorage`.
-  - Logout functionality to clear sessions.
+Book Search
 
-- 📖 **Catalogue**
-  - Search books via the Open Library API.
-  - Display book details (title, author, cover).
-  - Borrow books directly from search results.
+Search books using the Open Library API
 
-- 📕 **Borrowing**
-  - Borrow books with a due date.
-  - Prevent duplicate borrowing of the same book.
-  - Quick borrow option for faster checkout.
+Quick borrow option directly from search results
 
-- 📊 **Tracking**
-  - View borrowed books with status: *Currently Borrowed*, *Returned*, or *Overdue*.
-  - Librarians can view overdue books across all users.
+Catalogue
 
-- 🖥️ **Dashboard**
-  - Personalized dashboard showing user details and borrowed book count.
+Browse popular books or by category
 
----
+Borrow books with due dates
 
-## 🛠️ Tech Stack
+Borrowing System
 
-- **Frontend:** HTML + Tailwind CSS
-- **Logic & Storage:** JavaScript + `localStorage`
-- **API:** Open Library API (for book search)
+Borrow books manually or via quick borrow
 
----
+Prevents duplicate borrowing of the same book
 
-## 📂 Project Structure
+Tracking
 
+View borrowed books, due dates, and status (Borrowed, Returned, Overdue)
 
----
+Dashboard
 
-## 📸 Screenshots
+Displays user details (email, role, borrowed count)
 
- > ![App Screenshot](screenshot1.png)
- > ![App Screenshot](screenshot2.png)
- > ![App Screenshot](screenshot3.png)
- > ![App Screenshot](screenshot4.png)
- > ![App Screenshot](screenshot5.png)
- > ![App Screenshot](screenshot6.png)
- > ![App Screenshot](screenshot7.png)
+ Tech Stack
+Frontend: HTML, Tailwind CSS
 
- 
+Backend: JSON server (http://localhost:3000)
 
+API Integration: Open Library API
 
-- **Login & Registration Page**
-- **Dashboard**
-- **Catalogue Search**
-- **Borrow Form**
-- **Tracking & Overdue Records**
+Language: JavaScript (ES6+)
 
----
+ Project Structure
+Code
+LibraTrack/
+│── index.html        # Main UI (Auth + App sections)
+│── script.js         # Core logic (auth, search, borrow, tracking)
+│── db.json           # JSON server database (users, records)
+│── README.md         # Documentation
+ Setup Instructions
+Clone the repository
 
-## ⚡ Getting Started
+bash
+git clone https://github.com/your-username/LibraTrack.git
+cd LibraTrack
+Install JSON Server
 
-1. Clone the repository:
-   ```bash
-   git clone git@github.com:Brian022-mutai/libratrack.git
+bash
+npm install -g json-server
+Run the backend
+
+bash
+json-server --watch db.json --port 3000
+Open the app
+
+Simply open index.html in your browser.
+
+Authentication Page (Register/Login)
+
+Dashboard
+
+Book Search Results
+
+Catalogue View
+
+Borrow Flow
+
+Tracking Page
+
+> ![App Screenshot]"(screenshot1.png)
+> ![App Screenshot]"(screenshot2.png)
+> ![App Screenshot]"(screenshot3.png)
+> ![App Screenshot]"(screenshot4.png)
+> ![App Screenshot]"(screenshot5.png)
+> ![App Screenshot]"(screenshot6.png)
+> ![App Screenshot]"(screenshot7.png)
+
+ API Endpoints
+Users
+
+GET /users → Fetch all users
+
+POST /users → Register new user
+
+Records
+
+GET /records → Fetch all borrow records
+
+POST /records → Add new borrow record
+
+ Future Improvements
+Role-based access control (different views for Librarians vs Members)
+
+Book return functionality with fine calculation
+
+Enhanced UI with pagination and filters
+
+Deployment to a live server
+
+ Author
+Developed by Brian
 
